@@ -11,6 +11,8 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Client-only entrypoint. No server component, no networking beyond reading
@@ -18,6 +20,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
  */
 public final class PickupPopClient implements ClientModInitializer {
     public static final String MOD_ID = "pickuppop";
+    public static final Logger LOGGER = LoggerFactory.getLogger("PickupPop");
 
     private static PickupPopConfig config;
     private static PickupClientEvents events;
@@ -25,6 +28,12 @@ public final class PickupPopClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         config = PickupPopConfig.load();
+        // TEMP diagnostics (issue: no notifications in-game): one init line so
+        // the log proves the mod loaded; per-pickup lines live at the gates
+        // in PickupClientEvents/PickupHudRenderer. Downgrade after diagnosis.
+        LOGGER.info("[pickuppop] initialized: items={} xp={} arrows={} combine={}",
+                config.includeItems, config.includeExperience, config.includeArrows,
+                config.combineEntries);
         PickupClientEvents pickupEvents = new PickupClientEvents(config);
         events = pickupEvents;
         PickupHudRenderer renderer = new PickupHudRenderer(config, pickupEvents);

@@ -4,6 +4,7 @@
 
 package com.pickuppop.client;
 
+import com.pickuppop.PickupPopClient;
 import com.pickuppop.config.PickupPopConfig;
 import com.pickuppop.model.PickupEntry;
 import com.pickuppop.model.PickupKey;
@@ -51,6 +52,9 @@ public final class PickupHudRenderer {
     private final PickupPopConfig config;
     private final PickupClientEvents events;
     private final Map<PickupKey, CachedRow> rows = new HashMap<>();
+    // TEMP diagnostics (issue: no notifications in-game): logs each entry once
+    // when it is actually drawn. Remove after diagnosis.
+    private final Set<PickupKey> announced = new HashSet<>();
 
     public PickupHudRenderer(PickupPopConfig config, PickupClientEvents events) {
         this.config = config;
@@ -98,6 +102,10 @@ public final class PickupHudRenderer {
             boolean mayRender = bottom ? entryY < offset + step : entryY > offset + step;
             if (mayRender) {
                 CachedRow row = this.rows.get(entry.key());
+                if (this.announced.add(entry.key())) {
+                    PickupPopClient.LOGGER.info("[pickuppop] showing: name={} count={}",
+                            entry.displayName(), entry.count());
+                }
                 int entryX = position.getX(row.width, screenWidth, offsetX);
                 float alpha = moveOut
                         ? clamp((float) (entryY - offset) / step, 0.0F, 1.0F)
@@ -115,6 +123,7 @@ public final class PickupHudRenderer {
             retained.add(entry.key());
         }
         this.rows.keySet().retainAll(retained);
+        this.announced.retainAll(retained);
     }
 
     private void refreshRows(MinecraftClient client, List<PickupEntry> visible) {

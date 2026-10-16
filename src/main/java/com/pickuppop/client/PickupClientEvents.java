@@ -4,6 +4,7 @@
 
 package com.pickuppop.client;
 
+import com.pickuppop.PickupPopClient;
 import com.pickuppop.collect.PickupAggregator;
 import com.pickuppop.config.PickupPopConfig;
 import com.pickuppop.model.PickupEntry;
@@ -58,13 +59,23 @@ public final class PickupClientEvents {
 
     /** Called by the play-handler mixin for every vanilla take-item packet. */
     public void onEntityPickup(MinecraftClient client, int entityId, int playerId, int amount) {
+        // TEMP diagnostics (issue: no notifications in-game). Downgrade to
+        // debug/remove after the failing gate is convicted by a live log.
+        PickupPopClient.LOGGER.info("[pickuppop] packet: entity={} player={} amount={}", entityId,
+                playerId, amount);
         if (client.world == null || client.player == null) {
+            PickupPopClient.LOGGER.info("[pickuppop] skip: world-or-player=null");
             return;
         }
-        if (!(client.world.getEntityById(playerId) instanceof ClientPlayerEntity)) {
+        Entity collector = client.world.getEntityById(playerId);
+        PickupPopClient.LOGGER.info("[pickuppop] collector: {}",
+                collector == null ? "null" : collector.getClass().getSimpleName());
+        if (!(collector instanceof ClientPlayerEntity)) {
+            PickupPopClient.LOGGER.info("[pickuppop] skip: collector-not-local-player");
             return;
         }
         if (this.handledEntities.containsKey(entityId)) {
+            PickupPopClient.LOGGER.info("[pickuppop] skip: duplicate-suppressed");
             return;
         }
         this.resolvePickup(client, entityId, amount);
@@ -72,18 +83,26 @@ public final class PickupClientEvents {
 
     private void resolvePickup(MinecraftClient client, int entityId, int amount) {
         Entity entity = client.world.getEntityById(entityId);
+        PickupPopClient.LOGGER.info("[pickuppop] resolved: {}",
+                entity == null ? "null" : entity.getClass().getSimpleName());
         if (entity instanceof ItemEntity item) {
             if (this.config.includeItems) {
                 this.addItem(client, item.getStack(), amount);
+            } else {
+                PickupPopClient.LOGGER.info("[pickuppop] skip: items-disabled");
             }
         } else if (entity instanceof PersistentProjectileEntity arrow) {
             if (this.config.includeArrows) {
                 this.addItem(client, arrow.getItemStack(), amount);
+            } else {
+                PickupPopClient.LOGGER.info("[pickuppop] skip: arrows-disabled");
             }
         } else if (entity instanceof ExperienceOrbEntity orb) {
             if (this.config.includeExperience && orb.getExperienceAmount() > 0) {
                 int shown = this.config.experienceAsValue ? orb.getExperienceAmount() : amount;
                 this.addEntry(client, PickupKey.experience(), orb.getName().getString(), shown, null);
+            } else {
+                PickupPopClient.LOGGER.info("[pickuppop] skip: xp-disabled-or-zero");
             }
         }
     }
@@ -121,6 +140,7 @@ public final class PickupClientEvents {
     private void addEntry(MinecraftClient client, PickupKey key, String displayName, int amount,
             ItemStack stack) {
         if (client.player.getAbilities().creativeMode && this.config.disableInCreative) {
+            PickupPopClient.LOGGER.info("[pickuppop] skip: creative-disabled");
             return;
         }
         PickupKey effectiveKey = key;
@@ -130,6 +150,8 @@ public final class PickupClientEvents {
         }
         int cap = this.visibleCap(client);
         this.aggregator.addOrMerge(effectiveKey, displayName, amount, this.config.displayTime, cap);
+        PickupPopClient.LOGGER.info("[pickuppop] notify: name={} count+={} entries={}",
+                displayName, amount, this.aggregator.size());
         if (stack != null) {
             this.latestStacks.put(effectiveKey, stack);
         }

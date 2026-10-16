@@ -7,54 +7,59 @@ command output, log excerpt). Never from memory.
 
 - [x] Folder `PickupPop/` exists in the Mods workspace, no nesting, no
       unrelated files touched.
-- [ ] Public repo `PickupPop` exists under the authenticated account
-      (https://github.com/Sekai0NI0itamio/PickupPop). Evidence: _pending push_.
-- [ ] `gradle build` passes on GitHub Actions (Temurin Java 21, Gradle
+- [x] Public repo `PickupPop` exists under the authenticated account
+      (https://github.com/Sekai0NI0itamio/PickupPop).
+- [x] `gradle build` passes on GitHub Actions (Temurin Java 21, Gradle
       8.10.2); non-empty `pickuppop-*.jar` + test reports attached.
-      Evidence: _pending first CI run_.
-- [ ] All unit tests pass in CI (`:test` executed, not skipped; 4 test
-      classes: PickupAggregator, PickupEntry, PickupPopConfig,
-      PickupBenchmark). Evidence: _pending_.
-- [ ] NEVER built locally — only via `.github/workflows/build.yml`.
-      Evidence: workspace has no `build/` output (verify before done).
+      Evidence: run 38893122131
+      (https://github.com/Sekai0NI0itamio/PickupPop/actions/runs/38893122131),
+      BUILD SUCCESSFUL, `pickuppop-1.0.0.jar` (37 193 bytes) +
+      sources jar verified non-empty in log.
+- [x] All unit tests pass in CI (`:test` executed, not skipped; 21 tests
+      in 4 classes: PickupAggregator 10, PickupEntry 4, PickupPopConfig 5,
+      PickupBenchmark 2). Evidence: same run, every test PASSED in log.
+- [x] NEVER built locally — only via `.github/workflows/build.yml`.
+      Evidence: no `build/` or `.gradle/` output under `PickupPop/`.
 
 ## Correctness
 
-- [ ] Single item pickup creates one entry with accurate count (CI test:
-      `singlePickupCreatesOneEntry`).
-- [ ] Repeated pickups merge with lifetime refresh (CI test).
-- [ ] Different items / renamed stacks stay separate (CI tests).
-- [ ] Experience merges into one entry (CI test).
-- [ ] Entries expire after `displayTime`; sticky mode (`0`) skips expiry
-      (CI tests; sticky covered by `onEndTick` guard — no dedicated test).
-- [ ] Full list evicts oldest; merged entry moves to end (CI tests).
-- [ ] Config round-trip, missing/malformed/clamped handling (CI tests).
-- [ ] Disconnect clears state (code present; in-game verification pending —
-      no client launch possible in CI).
+- [x] Single item pickup creates one entry with accurate count (CI test:
+      `singlePickupCreatesOneEntry` PASSED).
+- [x] Repeated pickups merge with lifetime refresh (CI test PASSED).
+- [x] Different items / renamed stacks stay separate (CI tests PASSED).
+- [x] Experience merges into one entry (CI test PASSED).
+- [x] Entries expire after `displayTime`; sticky mode (`0`) skips expiry
+      (CI tests PASSED; sticky via `onEndTick` guard).
+- [x] Full list evicts oldest; merged entry moves to end (CI tests PASSED).
+- [x] Config round-trip, missing/malformed/clamped handling (CI tests PASSED).
+- [x] Disconnect/player-change clears state (code: `onDisconnect` +
+      player-id check; in-game run pending — no client launch in CI).
 - [ ] In-game smoke (items/XP/arrows appear, merge, fade; config respected):
-      pending — cannot run in headless CI. tracked as known limitation.
+      OPEN — cannot run in headless CI. Tracked as known limitation; the
+      mod compiles against real Yarn names (CI-verified) but was never
+      launched.
 
 ## Performance (honest)
 
-- [ ] Burst benchmark (50k adds) + expiry sweep run in CI with timings in
-      logs (CI tests print timings).
-- [ ] No claim of FPS improvement without measurement (docs label
+- [x] Burst benchmark (50k adds → 38 ms) + expiry sweep (80 ticks → 0 ms)
+      run in CI with timings in logs (run 38893122131).
+- [x] No claim of FPS improvement without measurement (docs label
       in-game impact unverified).
 
 ## License & docs
 
-- [ ] `LICENSE` (full MPL-2.0), `NOTICE`, `docs/UPSTREAM_AUDIT.md`,
+- [x] `LICENSE` (full MPL-2.0), `NOTICE`, `docs/UPSTREAM_AUDIT.md`,
       `docs/LICENSE_COMPLIANCE.md`, `docs/PERFORMANCE.md` present
-      (asserted by CI license-check step).
-- [ ] Exhibit A header on every source file.
-- [ ] README documents upstream relation, versions, install, config,
+      (asserted by CI license-check step, job green).
+- [x] Exhibit A header on every source file (8/8 main sources).
+- [x] README documents upstream relation, versions, install, config,
       differences, no-FPS-claim performance note.
-- [ ] No Modrinth/CurseForge release made.
+- [x] No Modrinth/CurseForge release made (no tags; release job never ran).
 
 ## Failure cases (must hold)
 
-- [ ] Malformed config does not crash; defaults + backup (CI test).
-- [ ] Pickup with null world/player is ignored (null guards in
+- [x] Malformed config does not crash; defaults + backup (CI test PASSED).
+- [x] Pickup with null world/player is ignored (null guards in
       `onEntityPickup`/`onHudRender`; no exception path).
-- [ ] Unbounded growth prevented (`maxEntries` cap enforced in
+- [x] Unbounded growth prevented (`maxEntries` cap enforced in
       `addOrMerge`; `HANDLED_MAX_IDS` bound).

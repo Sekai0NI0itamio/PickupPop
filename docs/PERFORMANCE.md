@@ -52,8 +52,18 @@ read from CI logs after the first green run and recorded here.
 
 ## Measurements
 
-- CI microbenchmarks: _pending first green CI run — timings will be pasted
-  from the Actions log into this section._
+CI run: https://github.com/Sekai0NI0itamio/PickupPop/actions/runs/38893122131
+(`gradle build`, Temurin 21.0.12, Gradle 8.10.2, ubuntu-24.04) —
+BUILD SUCCESSFUL, 21/21 tests passed:
+
+- `burstMergeWorkload`: **50 000 adds → 38 ms**, 16 entries, total 50 000
+  (correct). ~0.76 µs per pickup on the aggregation path.
+- `expirySweepWorkload`: **80 ticks → 0 ms**, list fully drained.
+- Full `gradle build` (remap + compile + loom tasks + tests): 41 s.
+- Artifacts: `pickuppop-1.0.0.jar` (37 193 bytes, non-empty),
+  `pickuppop-1.0.0-sources.jar` (17 665 bytes), test reports — all
+  uploaded (`pickuppop-jar`, `pickuppop-test-reports`).
+
 - In-game FPS / frame-time impact: **unverified**. CI runners are headless
   and cannot launch a Minecraft client, so no render-loop measurement is
   possible in this pipeline. The render savings above are argued from

@@ -195,7 +195,7 @@ public final class PickupHudRenderer {
         if (this.config.entryBackground != PickupPopConfig.EntryBackground.CHAT) {
             return;
         }
-        double opacity = client.options.textBackgroundOpacity.getValue();
+        double opacity = client.options.getTextBackgroundOpacity().getValue();
         int bgAlpha = (int) (opacity * (1.0F - alpha) * 255.0F) << 24;
         int endY = posY + SPRITE_SIZE + (this.config.displayAmount.sprite() ? 1 : 0);
         drawContext.fill(posX - 3, posY, posX + width + 5, endY, bgAlpha);

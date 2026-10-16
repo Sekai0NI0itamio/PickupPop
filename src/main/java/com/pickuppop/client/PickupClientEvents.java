@@ -10,6 +10,7 @@ import com.pickuppop.model.PickupEntry;
 import com.pickuppop.model.PickupKey;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ExperienceOrbEntity;
 import net.minecraft.entity.ItemEntity;
@@ -111,7 +112,7 @@ public final class PickupClientEvents {
         if (this.config.combineEntries == PickupPopConfig.CombineMode.ALWAYS) {
             return stack.getItem().getName().getString();
         }
-        if (stack.hasCustomName()) {
+        if (stack.contains(DataComponentTypes.CUSTOM_NAME)) {
             return stack.getName().getString();
         }
         return itemId;

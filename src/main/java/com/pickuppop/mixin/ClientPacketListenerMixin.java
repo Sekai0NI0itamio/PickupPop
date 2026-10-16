@@ -9,9 +9,7 @@ import com.pickuppop.client.PickupClientEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.network.packet.s2c.play.ItemPickupAnimationS2CPacket;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -26,16 +24,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(ClientPlayNetworkHandler.class)
 public abstract class ClientPacketListenerMixin {
-    @Shadow
-    @Final
-    private MinecraftClient client;
-
     @Inject(method = "onItemPickupAnimation", at = @At("TAIL"))
     private void pickuppop$onItemPickup(ItemPickupAnimationS2CPacket packet, CallbackInfo ci) {
         PickupClientEvents events = PickupPopClient.events();
         if (events != null) {
-            events.onEntityPickup(this.client, packet.getEntityId(), packet.getPlayerId(),
-                    packet.getStackAmount());
+            // Injected at the tail, so this runs on the client thread after
+            // vanilla processing; no shadowed client field needed.
+            events.onEntityPickup(MinecraftClient.getInstance(), packet.getEntityId(),
+                    packet.getPlayerId(), packet.getStackAmount());
         }
     }
 }

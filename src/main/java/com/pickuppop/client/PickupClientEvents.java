@@ -123,8 +123,8 @@ public final class PickupClientEvents {
             return;
         }
         PickupKey effectiveKey = key;
-        if (this.config.combineEntries == PickupPopConfig.CombineMode.NEVER
-                && key.kind() == PickupKey.Kind.ITEM) {
+        if (this.config.combineEntries == PickupPopConfig.CombineMode.NEVER) {
+            // Upstream NEVER mode keeps every pickup (including XP orbs) separate.
             effectiveKey = PickupKey.item(key.id(), key.label() + "#" + this.uniqueCounter.incrementAndGet());
         }
         int cap = this.visibleCap(client);
@@ -181,10 +181,18 @@ public final class PickupClientEvents {
                 || this.stackLabel(stack, itemId).equals(entry.displayName());
     }
 
+    private int lastPlayerId = -1;
+
     /** Client tick: age duplicate-suppression ids and expire entries. */
     public void onEndTick(MinecraftClient client) {
         if (client.isPaused()) {
             return;
+        }
+        if (client.player != null && client.player.getId() != this.lastPlayerId) {
+            // Fresh player entity (login, respawn, dimension travel) must not
+            // inherit the previous life's notifications (cf. upstream copy/logout).
+            this.onDisconnect();
+            this.lastPlayerId = client.player.getId();
         }
         if (!this.handledEntities.isEmpty()) {
             this.handledEntities.replaceAll((id, age) -> age + 1);

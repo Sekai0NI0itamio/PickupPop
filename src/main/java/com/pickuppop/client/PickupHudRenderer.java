@@ -256,7 +256,7 @@ public final class PickupHudRenderer {
 
     private int textColor(ItemStack stack) {
         if (!this.config.ignoreRarity && stack != null && stack.getRarity() != Rarity.COMMON) {
-            Integer rarityColor = stack.getRarity().formatting.getColorValue();
+            Integer rarityColor = stack.getRarity().getFormatting().getColorValue();
             if (rarityColor != null) {
                 return rarityColor;
             }

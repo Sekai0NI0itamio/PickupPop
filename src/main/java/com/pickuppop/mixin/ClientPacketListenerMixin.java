@@ -31,7 +31,7 @@ public abstract class ClientPacketListenerMixin {
             // Injected at the tail, so this runs on the client thread after
             // vanilla processing; no shadowed client field needed.
             events.onEntityPickup(MinecraftClient.getInstance(), packet.getEntityId(),
-                    packet.getPlayerId(), packet.getStackAmount());
+                    packet.getCollectorEntityId(), packet.getStackAmount());
         }
     }
 }

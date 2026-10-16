@@ -18,13 +18,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * Reports vanilla take-item packets (items, experience orbs and recovered
  * arrows all arrive through this packet) to the pickup tracker.
  *
- * <p>Injection is at the tail of the handler so it runs on the client thread
- * after vanilla processing, mirroring the upstream mixin which injects after
- * the same-thread check.
+ * <p>Injection is immediately after the same-thread check, mirroring the
+ * upstream mixin. This is load-bearing: vanilla decrements the stack and
+ * discards fully-collected entities later in the handler, so a TAIL
+ * injection sees {@code getEntityById} return null and silently drops every
+ * pickup (diagnosed via gate logs: {@code resolved: null}).
  */
 @Mixin(ClientPlayNetworkHandler.class)
 public abstract class ClientPacketListenerMixin {
-    @Inject(method = "onItemPickupAnimation", at = @At("TAIL"))
+    @Inject(method = "onItemPickupAnimation", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/NetworkThreadUtils;forceMainThread(Lnet/minecraft/network/packet/Packet;Lnet/minecraft/network/listener/PacketListener;Lnet/minecraft/util/thread/ThreadExecutor;)V", shift = At.Shift.AFTER))
     private void pickuppop$onItemPickup(ItemPickupAnimationS2CPacket packet, CallbackInfo ci) {
         PickupClientEvents events = PickupPopClient.events();
         if (events != null) {

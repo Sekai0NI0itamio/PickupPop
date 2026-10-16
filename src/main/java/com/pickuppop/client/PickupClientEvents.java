@@ -59,23 +59,24 @@ public final class PickupClientEvents {
 
     /** Called by the play-handler mixin for every vanilla take-item packet. */
     public void onEntityPickup(MinecraftClient client, int entityId, int playerId, int amount) {
-        // TEMP diagnostics (issue: no notifications in-game). Downgrade to
-        // debug/remove after the failing gate is convicted by a live log.
-        PickupPopClient.LOGGER.info("[pickuppop] packet: entity={} player={} amount={}", entityId,
+        // Gate diagnostics at debug level (off by default; convicted the
+        // TAIL-injection failure in v1.0.0): packet → collector → resolve →
+        // notify. Kept as permanent tripwires, never at info to avoid spam.
+        PickupPopClient.LOGGER.debug("[pickuppop] packet: entity={} player={} amount={}", entityId,
                 playerId, amount);
         if (client.world == null || client.player == null) {
-            PickupPopClient.LOGGER.info("[pickuppop] skip: world-or-player=null");
+            PickupPopClient.LOGGER.debug("[pickuppop] skip: world-or-player=null");
             return;
         }
         Entity collector = client.world.getEntityById(playerId);
-        PickupPopClient.LOGGER.info("[pickuppop] collector: {}",
+        PickupPopClient.LOGGER.debug("[pickuppop] collector: {}",
                 collector == null ? "null" : collector.getClass().getSimpleName());
         if (!(collector instanceof ClientPlayerEntity)) {
-            PickupPopClient.LOGGER.info("[pickuppop] skip: collector-not-local-player");
+            PickupPopClient.LOGGER.debug("[pickuppop] skip: collector-not-local-player");
             return;
         }
         if (this.handledEntities.containsKey(entityId)) {
-            PickupPopClient.LOGGER.info("[pickuppop] skip: duplicate-suppressed");
+            PickupPopClient.LOGGER.debug("[pickuppop] skip: duplicate-suppressed");
             return;
         }
         this.resolvePickup(client, entityId, amount);
@@ -83,26 +84,26 @@ public final class PickupClientEvents {
 
     private void resolvePickup(MinecraftClient client, int entityId, int amount) {
         Entity entity = client.world.getEntityById(entityId);
-        PickupPopClient.LOGGER.info("[pickuppop] resolved: {}",
+        PickupPopClient.LOGGER.debug("[pickuppop] resolved: {}",
                 entity == null ? "null" : entity.getClass().getSimpleName());
         if (entity instanceof ItemEntity item) {
             if (this.config.includeItems) {
                 this.addItem(client, item.getStack(), amount);
             } else {
-                PickupPopClient.LOGGER.info("[pickuppop] skip: items-disabled");
+                PickupPopClient.LOGGER.debug("[pickuppop] skip: items-disabled");
             }
         } else if (entity instanceof PersistentProjectileEntity arrow) {
             if (this.config.includeArrows) {
                 this.addItem(client, arrow.getItemStack(), amount);
             } else {
-                PickupPopClient.LOGGER.info("[pickuppop] skip: arrows-disabled");
+                PickupPopClient.LOGGER.debug("[pickuppop] skip: arrows-disabled");
             }
         } else if (entity instanceof ExperienceOrbEntity orb) {
             if (this.config.includeExperience && orb.getExperienceAmount() > 0) {
                 int shown = this.config.experienceAsValue ? orb.getExperienceAmount() : amount;
                 this.addEntry(client, PickupKey.experience(), orb.getName().getString(), shown, null);
             } else {
-                PickupPopClient.LOGGER.info("[pickuppop] skip: xp-disabled-or-zero");
+                PickupPopClient.LOGGER.debug("[pickuppop] skip: xp-disabled-or-zero");
             }
         }
     }
@@ -114,11 +115,16 @@ public final class PickupClientEvents {
         String itemId = Registries.ITEM.getId(stack.getItem()).toString();
         String label = this.stackLabel(stack, itemId);
         PickupKey key = PickupKey.item(itemId, label);
+        // Display text is always the readable hover name (includes custom and
+        // enchanted-item names); the key label above stays mode-dependent so
+        // merging is unaffected. Previously the raw registry id leaked into
+        // the HUD for unnamed items in EXCLUDE_NAMED mode.
         // Copy once at event time; never touch the live entity stack afterwards.
         // Note: upstream strips the enchantment glint in ALWAYS mode; PickupPop
         // keeps the copied stack as-is to avoid an extra component write per
-        // pickup (documented in docs/PERFORMANCE.md).
-        this.addEntry(client, key, label, amount, stack.copy());
+        // pickup (documented in docs/PERFORMANCE.md), so enchanted icons keep
+        // their glint and rarity-colored names render from the live stack.
+        this.addEntry(client, key, stack.getName().getString(), amount, stack.copy());
     }
 
     /**
@@ -140,7 +146,7 @@ public final class PickupClientEvents {
     private void addEntry(MinecraftClient client, PickupKey key, String displayName, int amount,
             ItemStack stack) {
         if (client.player.getAbilities().creativeMode && this.config.disableInCreative) {
-            PickupPopClient.LOGGER.info("[pickuppop] skip: creative-disabled");
+            PickupPopClient.LOGGER.debug("[pickuppop] skip: creative-disabled");
             return;
         }
         PickupKey effectiveKey = key;
@@ -150,7 +156,7 @@ public final class PickupClientEvents {
         }
         int cap = this.visibleCap(client);
         this.aggregator.addOrMerge(effectiveKey, displayName, amount, this.config.displayTime, cap);
-        PickupPopClient.LOGGER.info("[pickuppop] notify: name={} count+={} entries={}",
+        PickupPopClient.LOGGER.debug("[pickuppop] notify: name={} count+={} entries={}",
                 displayName, amount, this.aggregator.size());
         if (stack != null) {
             this.latestStacks.put(effectiveKey, stack);
@@ -200,8 +206,14 @@ public final class PickupClientEvents {
         if (!itemId.equals(entry.key().id())) {
             return false;
         }
-        return this.config.combineEntries == PickupPopConfig.CombineMode.ALWAYS
-                || this.stackLabel(stack, itemId).equals(entry.displayName());
+        // Match against the aggregation key label, not the display name: the
+        // display name is always the readable hover name while key labels are
+        // mode-dependent (registry id for unnamed items, unique per pickup in
+        // NEVER mode where id-only matching applies).
+        PickupPopConfig.CombineMode mode = this.config.combineEntries;
+        return mode == PickupPopConfig.CombineMode.ALWAYS
+                || mode == PickupPopConfig.CombineMode.NEVER
+                || this.stackLabel(stack, itemId).equals(entry.key().label());
     }
 
     private int lastPlayerId = -1;

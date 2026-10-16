@@ -38,7 +38,9 @@ hot paths optimized. See `NOTICE`, `docs/UPSTREAM_AUDIT.md` and
    Fabric API (`0.102.0+1.21.1`).
 2. Drop the PickupPop JAR from the CI artifacts into `mods/`.
 3. Launch the game. Tune `config/pickuppop.json` while the game is closed
-   (edits apply on restart).
+   (edits apply on restart). Note: the file is created once with defaults
+   and never overwritten afterwards — after updating the mod, delete it to
+   pick up new defaults, or edit the individual options.
 
 ## Configuration (defaults)
 
@@ -57,8 +59,8 @@ hot paths optimized. See `NOTICE`, `docs/UPSTREAM_AUDIT.md` and
 | `inventoryCount` | `false` | Show total in inventory (costs a scan) |
 | `textColor` / `ignoreRarity` | white / `false` | Text coloring |
 | `entryBackground` | `NONE` | `NONE` or `CHAT` |
-| `position` / `offsetX` / `offsetY` | `BOTTOM_RIGHT` / `8` / `4` | Placement |
-| `maxHeight` / `scale` | `0.5` / `4` | List budget / size |
+| `position` / `offsetX` / `offsetY` | `TOP_LEFT` / `8` / `4` | Placement (left edge, grows down) |
+| `maxHeight` / `scale` | `0.5` / `4` | List budget (max half the screen height) / size |
 | `maxEntries` | `20` | Hard cap on visible entries |
 
 ## Differences from upstream (intentional)

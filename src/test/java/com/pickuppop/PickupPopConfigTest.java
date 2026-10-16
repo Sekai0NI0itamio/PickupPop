@@ -32,6 +32,9 @@ class PickupPopConfigTest {
         assertTrue(config.fadeAway);
         assertTrue(config.drawSprite);
         assertEquals(PickupPopConfig.EntryBackground.NONE, config.entryBackground);
+        // Intentional difference from upstream (BOTTOM_RIGHT): left-edge list.
+        assertEquals(PickupPopConfig.Position.TOP_LEFT, config.position);
+        assertEquals(0.5, config.maxHeight);
     }
 
     @Test

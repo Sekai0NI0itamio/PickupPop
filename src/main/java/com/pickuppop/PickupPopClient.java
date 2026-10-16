@@ -28,9 +28,8 @@ public final class PickupPopClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         config = PickupPopConfig.load();
-        // TEMP diagnostics (issue: no notifications in-game): one init line so
-        // the log proves the mod loaded; per-pickup lines live at the gates
-        // in PickupClientEvents/PickupHudRenderer. Downgrade after diagnosis.
+        // One init line so the log proves the mod loaded; per-pickup gate
+        // diagnostics live at debug level in PickupClientEvents.
         LOGGER.info("[pickuppop] initialized: items={} xp={} arrows={} combine={}",
                 config.includeItems, config.includeExperience, config.includeArrows,
                 config.combineEntries);

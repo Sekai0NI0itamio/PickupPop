@@ -53,7 +53,7 @@ public final class PickupPopConfig {
     public boolean ignoreRarity = false;
     /** Background behind entries. Upstream default is NONE; CHAT matches chat opacity. */
     public EntryBackground entryBackground = EntryBackground.NONE;
-    public Position position = Position.BOTTOM_RIGHT;
+    public Position position = Position.TOP_LEFT;
     public int offsetX = 8;
     public int offsetY = 4;
     /** Fraction of the screen height the list may fill. */

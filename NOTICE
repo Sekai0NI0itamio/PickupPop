@@ -1,0 +1,48 @@
+PickupPop — attribution notice
+==============================
+
+PickupPop is an independent, clean-room adaptation inspired by:
+
+  Pick Up Notifier by Fuzs
+  https://github.com/Fuzss/pick-up-notifier
+  https://modrinth.com/mod/pick-up-notifier
+
+Upstream provenance
+-------------------
+- Upstream repository: https://github.com/Fuzss/pick-up-notifier
+- Audited branch: 1.21.1
+- Audited commit: 420357d93013a21feee0b2567b7611fe9f0a7b0d
+  ("Update build configuration", 2026-09-06)
+- Upstream license: Mozilla Public License 2.0 (see LICENSE in this
+  repository; upstream file LICENSE.md carries the same text)
+- Upstream copyright holder: Fuzs (and contributors)
+
+Reuse statement
+---------------
+No upstream source file was copied into this repository. Every file under
+`src/` was written anew for PickupPop in the `com.pickuppop` namespace;
+only behavioral ideas (event-driven pickup detection via the client
+take-item packet, count-merging aggregation, entry expiry, HUD layout and
+configuration groups) were carried over. See docs/LICENSE_COMPLIANCE.md
+for the file-by-file audit.
+
+The MPL-2.0 license header (Exhibit A notice) is included at the top of
+every source file. PickupPop as a whole is distributed under MPL-2.0;
+see LICENSE.
+
+No endorsement
+--------------
+PickupPop is not affiliated with, sponsored, or endorsed by Fuzs or the
+Pick Up Notifier contributors. "Pick Up Notifier" remains their project
+identity; "PickupPop" is this adaptation's own name, mod id
+(`pickuppop`) and visual identity.
+
+Third-party code NOT reused
+---------------------------
+- `TransparencyBuffer` (upstream, adapted from ClientStorage under
+  LGPL-3.0): deliberately NOT copied. PickupPop renders sprites directly
+  without an extra framebuffer.
+- `DisplayEntryRenderHelper` tooltip-gradient rendering: NOT copied;
+  PickupPop implements only NONE/CHAT backgrounds.
+- Puzzles Lib / Architectury APIs: NOT used; PickupPop depends only on
+  Fabric Loader, Fabric API, Yarn mappings and Minecraft itself.

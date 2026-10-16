@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "pickuppop",
+  "version": "${version}",
+  "name": "PickupPop",
+  "description": "Lightweight client-side pickup notifications for collected items, experience and recovered arrows.",
+  "authors": [
+    "Sekai0NI0itamio"
+  ],
+  "license": "MPL-2.0",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.pickuppop.PickupPopClient"
+    ]
+  },
+  "mixins": [
+    "pickuppop.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.14",
+    "fabric-api": "*",
+    "minecraft": "~1.21.1",
+    "java": ">=21"
+  }
+}
